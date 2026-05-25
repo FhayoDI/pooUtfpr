@@ -1,5 +1,6 @@
 import { StatusMidia } from "../enum/StatusMidia";
 import Genero from "./Genero";
+import AnoInvalidoError from "../exception/AnoInvalidoError";
 
 export default abstract class Midia {
 
@@ -10,9 +11,12 @@ export default abstract class Midia {
     private ano: number;
     private autor: string;
     private status: StatusMidia = StatusMidia.DISPONIVEL;
-    private genero!: Genero; 
+    private genero!: Genero;
 
     constructor(titulo: string, ano: number, autor: string) {
+        if (ano < 1900 || ano > 2026) {
+            throw new AnoInvalidoError(ano);
+        }
         this.id = Midia.proximoId++;
         this.titulo = titulo;
         this.ano = ano;

@@ -46,7 +46,12 @@ export default class MidiaController {
         }
     }
 
-    //Listagem 
+    // Tipo Generico: aceita qualquer subclasse de Midia e retorna a descricao dela
+    public descreverItem<T extends Midia>(item: T): string {
+        return item.descrever();
+    }
+
+    //Listagem
     public listarTodas(): Midia[] {
         return this.repository.buscarTodos();
     }
