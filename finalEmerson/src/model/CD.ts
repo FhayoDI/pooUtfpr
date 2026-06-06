@@ -1,11 +1,12 @@
 import Midia from "./Midia";
+import Genero from "./Genero";
 
 export default class CD extends Midia {
 
     private numeroFaixas: number;
 
-    constructor(titulo: string, ano: number, autor: string, numeroFaixas: number) {
-        super(titulo, ano, autor);
+    constructor(titulo: string, ano: number, autor: string, numeroFaixas: number, genero: Genero) {
+        super(titulo, ano, autor, genero);
         this.numeroFaixas = numeroFaixas;
     }
 

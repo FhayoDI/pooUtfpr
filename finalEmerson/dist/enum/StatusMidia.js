@@ -1,6 +1,4 @@
 "use strict";
-// REQUISITO: Enum
-// Estrutura de dados que define um conjunto fixo de valores.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatusMidia = void 0;
 var StatusMidia;

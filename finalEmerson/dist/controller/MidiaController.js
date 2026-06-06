@@ -5,32 +5,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const CD_1 = __importDefault(require("../model/CD"));
 const DVD_1 = __importDefault(require("../model/DVD"));
-// REQUISITO: MVC - Comunicacao via Controller
-// O Controller e o intermediario entre View (menu) e Model (Midia/Repository).
-// A View nunca fala direto com o Repository - sempre passa pelo Controller.
-//
-// REQUISITO: Injecao de Dependencia
-// O repositorio NAO e instanciado dentro da classe. E recebido pelo
-// construtor (dependencia explicita). O tipo declarado e a interface
-// IMidiaRepository (nao a classe concreta) - inversao de dependencia.
 class MidiaController {
     constructor(repository) {
         this.repository = repository;
     }
-    // === Cadastro ===
-    cadastrarCD(titulo, ano, autor, faixas) {
-        const cd = new CD_1.default(titulo, ano, autor, faixas);
+    cadastrarCD(titulo, ano, autor, faixas, genero) {
+        const cd = new CD_1.default(titulo, ano, autor, faixas, genero);
         this.repository.salvar(cd);
         return cd;
     }
-    cadastrarDVD(titulo, ano, autor, duracao) {
-        const dvd = new DVD_1.default(titulo, ano, autor, duracao);
+    cadastrarDVD(titulo, ano, autor, duracao, genero) {
+        const dvd = new DVD_1.default(titulo, ano, autor, duracao, genero);
         this.repository.salvar(dvd);
         return dvd;
     }
-    // REQUISITO: Sobrecarga (com union types)
-    // O metodo 'buscar' aceita tanto numero (id) quanto string (titulo).
-    // Estilo igual ao prof faz em SaleVehicle.sale(vehicle: Car | Motorcicle).
     buscar(termo) {
         if (typeof termo === "number") {
             return this.repository.buscarPorId(termo);
@@ -39,9 +27,6 @@ class MidiaController {
             return this.repository.buscarPorTitulo(termo);
         }
     }
-    // REQUISITO: Sobrecarga (parametros opcionais)
-    // Estilo igual ao prof faz em sale2(cost: number, car?: Car, motorcicle?: Motorcicle).
-    // Pode chamar passando so genero, so status, ou os dois.
     atualizarMidia(id, genero, status) {
         const midia = this.repository.buscarPorId(id);
         if (genero) {
@@ -50,8 +35,10 @@ class MidiaController {
         if (status) {
             midia.setStatus(status);
         }
+        // grava a alteracao no arquivo
+        this.repository.persistir();
     }
-    // === Listagem ===
+    //Listagem
     listarTodas() {
         return this.repository.buscarTodos();
     }

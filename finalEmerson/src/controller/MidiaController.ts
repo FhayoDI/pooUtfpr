@@ -14,20 +14,21 @@ export default class MidiaController {
         this.repository = repository;
     }
 
-    //Cadastro
-    public cadastrarCD(titulo: string, ano: number, autor: string, faixas: number): CD {
-        const cd = new CD(titulo, ano, autor, faixas);
+    public cadastrarCD(titulo: string, ano: number, autor: string, faixas: number, genero: Genero): CD {
+        const cd = new CD(titulo, ano, autor, faixas, genero);
         this.repository.salvar(cd);
         return cd;
     }
 
-    public cadastrarDVD(titulo: string, ano: number, autor: string, duracao: number): DVD {
-        const dvd = new DVD(titulo, ano, autor, duracao);
+    public cadastrarDVD(titulo: string, ano: number, autor: string, duracao: number, genero: Genero): DVD {
+        const dvd = new DVD(titulo, ano, autor, duracao, genero);
         this.repository.salvar(dvd);
         return dvd;
     }
 
 
+    public buscar(id: number): Midia;
+    public buscar(titulo: string): Midia;
     public buscar(termo: number | string): Midia {
         if (typeof termo === "number") {
             return this.repository.buscarPorId(termo);
@@ -44,11 +45,8 @@ export default class MidiaController {
         if (status) {
             midia.setStatus(status);
         }
-    }
-
-    // Tipo Generico: aceita qualquer subclasse de Midia e retorna a descricao dela
-    public descreverItem<T extends Midia>(item: T): string {
-        return item.descrever();
+        // grava a alteracao no arquivo
+        this.repository.persistir();
     }
 
     //Listagem

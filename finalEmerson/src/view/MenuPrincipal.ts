@@ -101,9 +101,13 @@ export default class MenuPrincipal {
         const faixas = parseInt(this.prompt("Numero de faixas: "));
         const generoNome = this.prompt("Genero (ex: Rock): ");
 
-        const cd = this.controller.cadastrarCD(titulo, ano, autor, faixas);
-        cd.setGenero(new Genero(generoNome, "Genero musical"));
-        console.log("CD cadastrado: " + cd.descrever());
+        try {
+            const genero = new Genero(generoNome, "Genero musical");
+            const cd = this.controller.cadastrarCD(titulo, ano, autor, faixas, genero);
+            console.log("CD cadastrado: " + cd.descrever());
+        } catch (error: any) {
+            console.log("Erro: " + error.message);
+        }
     }
 
     private cadastrarDVD(): void {
@@ -113,9 +117,13 @@ export default class MenuPrincipal {
         const duracao = parseInt(this.prompt("Duracao (min): "));
         const generoNome = this.prompt("Genero (ex: Drama): ");
 
-        const dvd = this.controller.cadastrarDVD(titulo, ano, autor, duracao);
-        dvd.setGenero(new Genero(generoNome, "Genero de filme"));
-        console.log("DVD cadastrado: " + dvd.descrever());
+        try {
+            const genero = new Genero(generoNome, "Genero de filme");
+            const dvd = this.controller.cadastrarDVD(titulo, ano, autor, duracao, genero);
+            console.log("DVD cadastrado: " + dvd.descrever());
+        } catch (error: any) {
+            console.log("Erro: " + error.message);
+        }
     }
 
     private listar(midias: ReturnType<MidiaController["listarTodas"]>): void {
@@ -134,13 +142,13 @@ export default class MenuPrincipal {
         const termo = this.prompt("Digite ID (numero) ou titulo: ");
 
         try {
-            const valor: number | string = isNaN(parseInt(termo)) ? termo : parseInt(termo);
-            const midia = this.controller.buscar(valor);
+            const numero = parseInt(termo);
+            const midia = isNaN(numero)
+                ? this.controller.buscar(termo)
+                : this.controller.buscar(numero);
             console.log("Encontrada: " + midia.descrever());
             console.log("Status: " + midia.getStatus());
-            if (midia.getGenero()) {
-                console.log("Genero: " + midia.getGenero().getNome());
-            }
+            console.log("Genero: " + midia.getGenero().getNome());
         } catch (error: any) {
             console.log("Erro: " + error.message);
         } finally {

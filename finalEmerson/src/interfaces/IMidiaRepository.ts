@@ -7,5 +7,6 @@ export interface IMidiaRepository extends IRepository<Midia> {
     buscarPorTitulo(titulo: string): Midia;
     ordenarPorAno(): Midia[];
     ordenarPorTitulo(): Midia[];
+    persistir(): void;
 
 }
