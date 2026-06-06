@@ -1,41 +1,85 @@
 # MediaVault
 
-Sistema de gerenciamento de acervo de mídias desenvolvido como projeto de POO.
+Gerenciador de mídias (CDs e DVDs) — projeto final de POO.
+Feito em **TypeScript** com arquitetura **MVC**. Os dados são salvos em um
+arquivo JSON (`dados.json`), então continuam existindo mesmo depois de fechar o
+programa.
 
 ## O que é
 
-Um armazém digital que cataloga qualquer tipo de mídia — física ou digital — com informações detalhadas sobre suporte e conteúdo.
+Um sistema de catálogo de mídias: cadastra CDs e DVDs, busca por id ou título,
+ordena por ano ou título e atualiza o status (disponível / emprestada / perdida).
 
-## Hierarquia de classes
+## Como rodar
 
-```
-Media
-├── PhysicalMedia
-│   ├── VinylRecord       (rpm, diameter, sides)
-│   ├── CompactDisc       (layers, isHDCD)
-│   ├── DVD               (region, side, layers)
-│   └── CassetteTape      (tapeType, playLength)
-└── DigitalMedia
-    ├── AudioFile         (sampleRate, channels)
-    └── VideoFile         (resolution, fps, hdr)
+```bash
+npm install
+npm run build          # compila o TypeScript para a pasta dist/
+npm start              # roda o menu interativo (= node dist/index.js)
+npm test               # roda os testes automatizados (jest)
+node dist/tests.js     # roda os testes manuais (console.assert)
 ```
 
-O conteúdo de uma mídia é representado por **composição**, não herança:
+## Estrutura de pastas
 
 ```
-ContentType
-├── Music           (bpm, musicalKey, instruments)
-│   └── MusicGenre  (name, era, subgenres[])
-├── Film            (director, cast, rating)
-│   └── FilmGenre   (name, subgenres[])
-└── Documentary     (subject, narrator, isInteractive)
+src/
+├── model/                       Classes do dominio
+│   ├── Midia.ts                 (abstrata - mae de CD e DVD, implementa Identificavel)
+│   ├── CD.ts                    (extends Midia)
+│   ├── DVD.ts                   (extends Midia)
+│   ├── Genero.ts                (associada a Midia)
+│   └── Identificavel.ts         (interface usada como restricao do generico <T>)
+├── enum/
+│   └── StatusMidia.ts           (DISPONIVEL, EMPRESTADA, PERDIDA)
+├── interfaces/
+│   ├── IRepository.ts           (interface generica - usa <T>)
+│   └── IMidiaRepository.ts      (interface especifica - estende a generica)
+├── repository/
+│   ├── RepositorioEmMemoria.ts  (classe base GENERICA <T> - guarda em memoria)
+│   └── MidiaRepository.ts       (estende a base; busca, ordenacao e persistencia em JSON)
+├── controller/
+│   └── MidiaController.ts       (camada C do MVC)
+├── view/
+│   └── MenuPrincipal.ts         (camada V do MVC, com prompt-sync)
+├── exception/
+│   ├── MidiaNaoEncontradaError.ts  (excecao personalizada)
+│   └── AnoInvalidoError.ts         (excecao personalizada)
+├── tests.ts                     (testes manuais com console.assert)
+└── index.ts                     (composition root - monta o sistema)
 ```
 
-Uma `Media` **tem um** `ContentType` — um vinil pode ter música, um DVD pode ter um documentário.
+## Onde cada requisito foi atendido
 
-## Conceitos de POO aplicados
+Para o detalhe linha a linha (arquivo e número da linha de cada item), veja
+[`OVERVIEW.md`](OVERVIEW.md).
 
-- **Herança** — `VinylRecord` herda de `PhysicalMedia` que herda de `Media`
-- **Composição** — `Media` contém um `ContentType`
-- **Classes abstratas** — `Media`, `PhysicalMedia` e `DigitalMedia` não são instanciadas diretamente
-- **Polimorfismo** — cada subclasse implementa seus próprios atributos e comportamentos
+| # | Requisito | Onde encontrar |
+|---|-----------|----------------|
+| 1 | Classificacao / Associacao entre classes | `Midia` classifica `CD` e `DVD` (heranca). `Genero` esta associado a `Midia`. |
+| 2 | Heranca | `CD extends Midia`, `DVD extends Midia`. `MidiaRepository extends RepositorioEmMemoria<Midia>`. |
+| 3 | MVC - comunicacao via Controller | A View (`MenuPrincipal`) nunca acessa o Repository direto: sempre passa pelo `MidiaController`. |
+| 4 | Injecao de Dependencia | `MidiaController` recebe um `IMidiaRepository` no construtor (`index.ts` monta tudo). |
+| 5 | Enum | `enum/StatusMidia.ts` |
+| 6 | Classes Abstratas | `Midia` (com metodo abstrato `descrever()`) e a classe base `RepositorioEmMemoria<T>`. |
+| 7 | Interfaces / Polimorfismo | `IRepository<T>`, `IMidiaRepository`, `Identificavel`. Lista mista de Midias chama `descrever()` polimorficamente. |
+| 8 | Sobrescrita (override) | `descrever()` reescrito em `CD` e `DVD`. `MidiaRepository.buscarPorId()` sobrescreve o da classe base para lancar a excecao. |
+| 9 | Sobrecarga (overload) | `MidiaController.buscar()` tem assinaturas reais: `buscar(id: number)` e `buscar(titulo: string)`. |
+| 10 | try-catch + Excecao Personalizada | `MidiaNaoEncontradaError` e `AnoInvalidoError` (ambas `extends Error`). Lancadas no Model/Repository e capturadas na View. |
+| 11 | Testes | `__tests__/midia.test.ts` (7 testes jest) e `tests.ts` (11 cenarios com console.assert). |
+| 12 | Tipos Genericos | `IRepository<T>` e a classe base `RepositorioEmMemoria<T extends Identificavel>`, reutilizada por `MidiaRepository`. |
+| 13 | Persistencia + Busca/Ordenacao | `MidiaRepository` grava/le um arquivo JSON (`persistir`/`carregar`). Busca: `buscarPorId`, `buscarPorTitulo`. Ordenacao: `ordenarPorAno`, `ordenarPorTitulo`. |
+| 14 | Inovacoes / Boas Praticas | Persistencia real em arquivo (dados sobrevivem ao fechar). Reuso via classe base generica (DRY). Sobrecarga real do TypeScript. Associacao `Genero` injetada pelo construtor. |
+| 15 | Qualidade do Projeto | Estrutura por camadas, README com mapeamento, testes automatizados passando, nomes consistentes em portugues. |
+
+## Fluxo do MVC
+
+```
+Usuario digita no menu
+        v
+  MenuPrincipal (View)
+        v
+  MidiaController        <- View nunca pula direto pro Model
+        v
+  MidiaRepository  ->  RepositorioEmMemoria<Midia>  ->  dados.json
+```

@@ -1,2 +1,11 @@
+# dependencias
 node_modules/
+
+# saida de compilacao
 dist/
+
+# arquivos de dados gerados em tempo de execucao
+dados.json
+dados.test.json
+dados.tests-manual.json
+dados.smoke.json
